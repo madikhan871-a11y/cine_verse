@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_constants.dart';
-import '../data/movie_data.dart';
 import '../models/movie_model.dart';
 import '../services/movie_service.dart';
 import '../widgets/genre_chip.dart';
@@ -25,8 +24,11 @@ class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
   String selectedGenre = 'All';
 
+  // Full-width featured cards.
+  // viewportFraction: 1.0 prevents the next card from appearing
+  // from the side.
   final PageController _featuredController = PageController(
-    viewportFraction: .9,
+    viewportFraction: 1.0,
   );
 
   @override
@@ -36,7 +38,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void refresh() {
+    if (!mounted) return;
+
     setState(() {});
+  }
+
+  void openMovie(Movie movie) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MovieDetailScreen(movie: movie),
+      ),
+    );
   }
 
   @override
@@ -68,6 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           NavigationDestination(
             icon: Icon(Icons.search_rounded),
+            selectedIcon: Icon(Icons.search_rounded),
             label: 'Search',
           ),
           NavigationDestination(
@@ -93,6 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
       child: CustomScrollView(
         slivers: [
+          // ---------------------------------------------------------
+          // HEADER
+          // ---------------------------------------------------------
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -120,13 +137,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Colors.white,
                     ),
                   ),
-
                   const SizedBox(width: 12),
-
                   const Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Welcome back 👋',
@@ -146,7 +160,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
                     ),
                   ),
-
                   Container(
                     width: 42,
                     height: 42,
@@ -170,14 +183,22 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(height: 25),
           ),
 
+          // ---------------------------------------------------------
+          // FEATURED MOVIES
+          // ---------------------------------------------------------
           SliverToBoxAdapter(
             child: SizedBox(
               height: 305,
-              child: PageView.builder(
+              child: trending.isEmpty
+                  ? _emptyFeatured()
+                  : PageView.builder(
                 controller: _featuredController,
                 itemCount: trending.length,
+                padEnds: false,
                 itemBuilder: (context, index) {
-                  return _featuredMovieCard(trending[index]);
+                  return _featuredMovieCard(
+                    trending[index],
+                  );
                 },
               ),
             ),
@@ -187,6 +208,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(height: 28),
           ),
 
+          // ---------------------------------------------------------
+          // TRENDING NOW
+          // ---------------------------------------------------------
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -210,12 +234,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(
               height: 255,
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                ),
                 scrollDirection: Axis.horizontal,
                 itemCount: trending.length,
-                separatorBuilder: (_, __) =>
-                const SizedBox(width: 14),
-                itemBuilder: (_, index) {
+                separatorBuilder: (context, index) {
+                  return const SizedBox(width: 14);
+                },
+                itemBuilder: (context, index) {
                   return MovieCard(
                     movie: trending[index],
                     onFavoriteChanged: refresh,
@@ -229,6 +256,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(height: 28),
           ),
 
+          // ---------------------------------------------------------
+          // GENRES
+          // ---------------------------------------------------------
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -248,12 +278,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(
               height: 42,
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                ),
                 scrollDirection: Axis.horizontal,
                 itemCount: AppConstants.genres.length,
-                separatorBuilder: (_, __) =>
-                const SizedBox(width: 9),
-                itemBuilder: (_, index) {
+                separatorBuilder: (context, index) {
+                  return const SizedBox(width: 9);
+                },
+                itemBuilder: (context, index) {
                   final genre = AppConstants.genres[index];
 
                   return GenreChip(
@@ -274,6 +307,9 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(height: 28),
           ),
 
+          // ---------------------------------------------------------
+          // ALL MOVIES / FILTERED MOVIES
+          // ---------------------------------------------------------
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             sliver: SliverToBoxAdapter(
@@ -289,33 +325,52 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(height: 15),
           ),
 
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverGrid(
-              delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                  return MovieCard(
-                    movie: filteredMovies[index],
-                    width: double.infinity,
-                    onFavoriteChanged: refresh,
-                  );
-                },
-                childCount: filteredMovies.length,
+          if (filteredMovies.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 40),
+                child: Center(
+                  child: Text(
+                    'No movies found',
+                    style: TextStyle(
+                      color: AppColors.textGrey,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
               ),
-              gridDelegate:
-              const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 15,
-                mainAxisSpacing: 20,
-                childAspectRatio: .58,
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverGrid(
+                delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                    return MovieCard(
+                      movie: filteredMovies[index],
+                      width: double.infinity,
+                      onFavoriteChanged: refresh,
+                    );
+                  },
+                  childCount: filteredMovies.length,
+                ),
+                gridDelegate:
+                const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 20,
+                  childAspectRatio: .58,
+                ),
               ),
             ),
-          ),
 
           const SliverToBoxAdapter(
             child: SizedBox(height: 30),
           ),
 
+          // ---------------------------------------------------------
+          // TOP RATED
+          // ---------------------------------------------------------
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -333,12 +388,15 @@ class _HomeScreenState extends State<HomeScreen> {
             child: SizedBox(
               height: 255,
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                ),
                 scrollDirection: Axis.horizontal,
                 itemCount: topRated.length,
-                separatorBuilder: (_, __) =>
-                const SizedBox(width: 14),
-                itemBuilder: (_, index) {
+                separatorBuilder: (context, index) {
+                  return const SizedBox(width: 14);
+                },
+                itemBuilder: (context, index) {
                   return MovieCard(
                     movie: topRated[index],
                     onFavoriteChanged: refresh,
@@ -356,18 +414,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ---------------------------------------------------------------
+  // FEATURED MOVIE CARD
+  // ---------------------------------------------------------------
   Widget _featuredMovieCard(Movie movie) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MovieDetailScreen(movie: movie),
-          ),
-        );
-      },
+      onTap: () => openMovie(movie),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 5),
+        margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
           color: AppColors.card,
@@ -376,21 +430,19 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            // Movie backdrop
             CachedNetworkImage(
               imageUrl: movie.backdropUrl,
               fit: BoxFit.cover,
-              errorWidget: (_, __, ___) {
-                return Container(
-                  color: AppColors.card,
-                  child: const Icon(
-                    Icons.movie_rounded,
-                    size: 60,
-                    color: AppColors.textGrey,
-                  ),
-                );
+              placeholder: (context, url) {
+                return _imagePlaceholder();
+              },
+              errorWidget: (context, url, error) {
+                return _imagePlaceholder();
               },
             ),
 
+            // Dark gradient over image
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -398,20 +450,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(.15),
-                    Colors.black.withOpacity(.95),
+                    Colors.black.withValues(alpha: .15),
+                    Colors.black.withValues(alpha: .95),
                   ],
                 ),
               ),
             ),
 
+            // Movie information
             Positioned(
               left: 20,
               right: 20,
               bottom: 20,
               child: Column(
-                crossAxisAlignment:
-                CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
@@ -422,8 +474,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.gold,
-                          borderRadius:
-                          BorderRadius.circular(7),
+                          borderRadius: BorderRadius.circular(7),
                         ),
                         child: Row(
                           children: [
@@ -480,21 +531,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
+            // Favorite button
             Positioned(
               right: 15,
               top: 15,
               child: GestureDetector(
                 onTap: () {
                   setState(() {
-                    movie.isFavorite =
-                    !movie.isFavorite;
+                    movie.isFavorite = !movie.isFavorite;
                   });
                 },
                 child: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(.55),
+                    color: Colors.black.withValues(alpha: .55),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -509,6 +560,54 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // IMAGE PLACEHOLDER
+  // ---------------------------------------------------------------
+  Widget _imagePlaceholder() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.surface,
+            AppColors.card,
+            AppColors.primaryDark,
+          ],
+        ),
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.movie_rounded,
+          size: 60,
+          color: AppColors.textGrey,
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // EMPTY FEATURED STATE
+  // ---------------------------------------------------------------
+  Widget _emptyFeatured() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: const Center(
+        child: Text(
+          'No featured movies',
+          style: TextStyle(
+            color: AppColors.textGrey,
+            fontSize: 15,
+          ),
         ),
       ),
     );

@@ -132,9 +132,9 @@ class MovieData {
       id: 7,
       title: 'The Hangover',
       posterUrl:
-      'https://image.tmdb.org/t/p/w500/AqgMH8mBGEYJd0K4r0R4eK3b9vY.jpg',
+      'https://image.tmdb.org/t/p/w500/uluhlXubGu1VxU63X9VHCLWDAYP.jpg',
       backdropUrl:
-      'https://image.tmdb.org/t/p/w1280/3RbzM8B7N7B8D8pY9K6Q5J4L3M2.jpg',
+      'https://image.tmdb.org/t/p/w500/uluhlXubGu1VxU63X9VHCLWDAYP.jpg',
       description:
       'Three friends wake up after a wild night in Las Vegas and try to piece together what happened.',
       genre: 'Comedy',
@@ -153,9 +153,9 @@ class MovieData {
       id: 8,
       title: 'Mad Max: Fury Road',
       posterUrl:
-      'https://image.tmdb.org/t/p/w500/hA2ple9q4qnwxp3hKVNhroipsir.jpg',
+      'https://image.tmdb.org/t/p/w500/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg',
       backdropUrl:
-      'https://image.tmdb.org/t/p/w1280/8yAC5Qr5s4u2v7b6n5m4l3k2j1h.jpg',
+      'https://image.tmdb.org/t/p/w1280/phszHPFVhPHhMZgo0fWTKBDQsJA.jpg',
       description:
       'In a ruined wasteland, Max joins Furiosa and a group of rebels fleeing from a tyrant.',
       genre: 'Action',
@@ -176,7 +176,7 @@ class MovieData {
       posterUrl:
       'https://image.tmdb.org/t/p/w500/5MXyQfz8xUP3dIFh9r2f0qT3aJp.jpg',
       backdropUrl:
-      'https://image.tmdb.org/t/p/w1280/Ag2B2E9O6hJ4c7X8r5K3m2L1N0.jpg',
+      'https://image.tmdb.org/t/p/w500/5MXyQfz8xUP3dIFh9r2f0qT3aJp.jpg',
       description:
       'Two rival magicians engage in a dangerous battle of obsession, sacrifice and deception.',
       genre: 'Drama',
@@ -195,9 +195,9 @@ class MovieData {
       id: 10,
       title: 'Knives Out',
       posterUrl:
-      'https://image.tmdb.org/t/p/w500/p9z1xM9R6J7K8L9M0N1B2V3C4X5.jpg',
+      'https://image.tmdb.org/t/p/w500/dm06L9pxDOL9jNSK4Cb6y139P5.jpg',
       backdropUrl:
-      'https://image.tmdb.org/t/p/w1280/6Wdl9N6d5J7K8L9M0N1B2V3C4X5.jpg',
+      'https://image.tmdb.org/t/p/w500/dm06L9pxDOL9jNSK4Cb6y139P5.jpg',
       description:
       'A detective investigates the mysterious death of a wealthy crime novelist surrounded by his family.',
       genre: 'Thriller',
